@@ -1,0 +1,53 @@
+# =========================
+# CORE AI / LLM
+# =========================
+langchain>=0.2.0
+langchain-core>=0.2.0
+langchain-community>=0.2.0
+langchain-openai>=0.2.0
+openai>=1.30.0
+
+# =========================
+# LANGSMITH (OBSERVABILITY)
+# =========================
+langsmith>=0.1.40
+
+# =========================
+# API / SERVER (FASTAPI)
+# =========================
+fastapi>=0.111.0
+uvicorn>=0.30.0
+
+# =========================
+# DATA VALIDATION
+# =========================
+pydantic>=2.0
+
+# =========================
+# GMAIL API INTEGRATION
+# =========================
+google-api-python-client>=2.130.0
+google-auth>=2.30.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+
+# =========================
+# HTML PARSING (EMAIL BODY)
+# =========================
+beautifulsoup4>=4.12.3
+
+# =========================
+# ENVIRONMENT MANAGEMENT
+# =========================
+python-dotenv>=1.0.1
+
+# =========================
+# TESTING
+# =========================
+pytest>=8.0.0
+
+# =========================
+# OPTIONAL (FUTURE RAG / VECTOR DB)
+# =========================
+chromadb>=0.5.0
+tiktoken>=0.7.0
