@@ -1,199 +1,480 @@
-JPPM Solutions AI Business Operations Agent
-An enterprise-grade AI agent orchestration system designed to support real-world business operations for James Programming Printing Media Solutions (JPPM Solutions) and its ecosystem of subsidiary brands.
-This project demonstrates a production-style architecture using LangChain, LangGraph, Retrieval-Augmented Generation (RAG), structured knowledge bases, and human-in-the-loop workflows to intelligently route customer inquiries, classify emails, and generate safe, reviewable responses.
+# JPPM Solutions AI Business Operations Agent
+
+An enterprise-grade AI business communications and workflow orchestration platform built for the JPPM Solutions ecosystem.
+
+This project demonstrates a production-oriented AI systems architecture using:
+
+- LangChain
+- LangGraph
+- Chroma Vector RAG
+- Gmail API integration
+- FastAPI
+- Human-in-the-loop approval workflows
+- Knowledge-grounded AI response generation
+- Multi-brand enterprise routing
+
+The system intelligently classifies emails, routes customer inquiries to the correct business unit, retrieves relevant business knowledge, generates professional AI-assisted draft responses, and enforces strict human approval before any outbound communication occurs.
+
 ---
-🚀 Overview
-The JPPM Solutions AI Business Ops Agent is a multi-purpose AI system that:
-Answers customer questions across multiple brands
-Routes inquiries to the correct business unit
-Classifies incoming emails (important, spam, reply-needed, trash)
-Generates professional draft responses
-Enforces human approval before sending any outbound communication
-Uses a structured knowledge base of company brands and services
-This is a real-world enterprise use case combining AI agents, automation, and business operations.
+
+# 🚀 Overview
+
+The JPPM Solutions AI Business Operations Agent functions as an AI-powered business communications assistant capable of:
+
+- Classifying inbound business emails
+- Routing customer inquiries to the correct subsidiary brand
+- Retrieving context from a vectorized knowledge base
+- Generating grounded AI draft responses
+- Creating Gmail drafts safely
+- Enforcing human approval before any action
+- Maintaining audit logs of workflow decisions
+- Running stateful LangGraph workflows
+
+This repository demonstrates real-world enterprise AI orchestration patterns suitable for production business automation systems.
+
 ---
-🧠 Core Capabilities
-1. Brand-Aware Question Routing
-The agent uses a structured knowledge base to determine which JPPM brand should handle a request:
-AI Agent Innovation Academy (AI education & certification)
-App & Web Developers (web, app, AI systems)
-MyPrintingDeals (printing & direct mail)
-3D Figs (3D printing products)
-USA Marketing NOW (full-service marketing)
-Realty Media Expert (real estate marketing)
-SoCal Television (local media)
-World Television TV (streaming platform)
-Tripping AI (AI travel assistant)
-VLOGit (social media platform)
-TapCard (digital business cards)
-Useful AI Hacks (AI media & YouTube content)
+
+# 🧠 Core Capabilities
+
+## 1. Multi-Brand AI Routing
+
+The system intelligently routes inquiries across the JPPM Solutions ecosystem.
+
+Supported brands include:
+
+- AI Agent Innovation Academy
+- App & Web Developers
+- MyPrintingDeals
+- 3D Figs
+- USA Marketing NOW
+- Realty Media Expert
+- SoCal Television
+- World Television TV
+- Tripping AI
+- VLOGit Social Media
+- TapCard Digital Business Card
+- Useful AI Hacks
+
+Routing decisions are based on:
+
+- Semantic classification
+- Knowledge base retrieval
+- Business-specific intent detection
+- Email content analysis
+
 ---
-2. Email Classification Engine
-Incoming messages are classified into:
-`important`
-`needs_reply`
-`spam`
-`trash`
-This enables automated prioritization of business communication.
----
-3. AI-Generated Draft Replies
-For messages requiring a response, the agent:
-Generates a professional, context-aware draft
-Aligns with the correct brand voice
-Avoids hallucinations using knowledge grounding
-Prepares responses for human review
----
-4. Human-in-the-Loop (HITL) Approval
-No outbound communication is sent automatically.
-All responses:
-Require explicit approval
-Can be edited or rejected
-Are logged for auditability
-This ensures enterprise safety, compliance, and control.
----
-5. Retrieval-Augmented Knowledge Base (RAG)
-The system uses structured Markdown knowledge files:
+
+## 2. LangGraph Stateful Workflow Orchestration
+
+The system uses LangGraph to orchestrate AI business workflows.
+
+Workflow example:
+
+```text
+START
+→ Initialize State
+→ Email Classification
+→ Brand Routing
+→ Action Selection
+→ RAG Reply Generation
+→ Human Approval
+→ Gmail Draft Creation
+→ END
 ```
+
+Each workflow maintains state, audit logs, routing decisions, and safety controls throughout execution.
+
+---
+
+## 3. Retrieval-Augmented Generation (RAG)
+
+The platform uses a Chroma vector database built from structured Markdown knowledge files.
+
+Knowledge sources include:
+
+```text
 data/
   knowledge_base/
     company.md
     brands/
       *.md
 ```
-Each brand includes:
-Services
-Routing logic
-Ideal customer questions
-Reply guidance
-Safety rules
+
+The RAG pipeline provides:
+
+- Brand-aware response generation
+- Reduced hallucinations
+- Context-grounded customer replies
+- Knowledge-constrained AI behavior
+- Semantic retrieval across company data
+
 ---
-🏗️ Architecture
-```
-User Input / Email
-        ↓
-Classification Layer
-        ↓
-Routing Engine (Brand Selection)
-        ↓
-RAG Retrieval (Knowledge Base)
-        ↓
-LLM Response Generation
-        ↓
-Human Approval Layer
-        ↓
-Final Response (Approved Only)
-```
-Key Components
-LangChain → Prompting, chains, orchestration
-LangGraph (planned) → Stateful workflows
-RAG → Grounded responses from company knowledge
-FastAPI (optional) → API layer
-Python → Core implementation
+
+## 4. AI-Powered Email Classification
+
+Incoming emails are classified into categories such as:
+
+- `needs_reply`
+- `archive`
+- `human_review`
+- `spam`
+- `trash`
+
+The classification layer combines:
+
+- Rule-based safety logic
+- LangChain/OpenAI LLM analysis
+- RAG context retrieval
+- Brand validation rules
+
 ---
-📁 Project Structure
+
+## 5. AI-Generated Customer Reply Drafts
+
+For legitimate customer inquiries, the system generates professional AI-assisted draft responses.
+
+Features include:
+
+- Brand-specific reply tone
+- Context-aware messaging
+- RAG-grounded response generation
+- Safe fallback behavior
+- Human review before use
+
+The system never auto-sends emails.
+
+---
+
+## 6. Human-in-the-Loop (HITL) Safety Layer
+
+All outbound actions require explicit approval.
+
+Safety protections include:
+
+- No automatic email sending
+- Human approval required
+- Audit logging
+- Controlled Gmail draft creation
+- Brand-constrained routing
+- Knowledge-grounded responses
+- Sensitive-topic escalation
+
+This architecture reflects enterprise AI governance and operational safety practices.
+
+---
+
+## 7. Gmail API Integration
+
+The platform integrates directly with Gmail using OAuth authentication.
+
+Capabilities include:
+
+- Reading unread emails
+- Extracting message content
+- Creating Gmail drafts
+- Approval-driven workflows
+- Safe email processing
+
+No automatic sending exists in the system.
+
+---
+
+# 🏗️ High-Level Architecture
+
+```text
+Gmail Inbox
+        ↓
+LangGraph Workflow Engine
+        ↓
+LLM Classification Layer
+        ↓
+Brand Routing Engine
+        ↓
+Chroma Vector RAG Retrieval
+        ↓
+AI Draft Generation
+        ↓
+Human Approval API
+        ↓
+Gmail Draft Creation
+        ↓
+Manual Human Send
 ```
+
+---
+
+# ⚙️ Technology Stack
+
+| Layer | Technology |
+|---|---|
+| AI Orchestration | LangChain |
+| Stateful Workflows | LangGraph |
+| Vector Database | ChromaDB |
+| Embeddings | OpenAI Embeddings |
+| LLM Provider | OpenAI |
+| API Framework | FastAPI |
+| Email Integration | Gmail API |
+| Testing | Pytest |
+| Environment Management | python-dotenv |
+| Language | Python 3.13 |
+
+---
+
+# 📁 Project Structure
+
+```text
 app/
-  main.py
-  router.py
-  email_classifier.py
-  response_generator.py
-  approval.py
-
+│
+├── email_ops/
+│   ├── approval_schemas.py
+│   ├── approval_service.py
+│   ├── classifier.py
+│   ├── gmail_client.py
+│   ├── gmail_triage.py
+│   ├── llm_classifier.py
+│   ├── reply_generator.py
+│   └── workflow_graph.py
+│
+├── rag/
+│   ├── ingest.py
+│   ├── knowledge_loader.py
+│   └── retriever.py
+│
+├── main.py
+│
 data/
-  knowledge_base/
-    company.md
-    brands/
-      *.md
-
+│
+├── knowledge_base/
+│   ├── company.md
+│   └── brands/
+│       ├── ai_agent_innovation_academy.md
+│       ├── app_and_web_developers.md
+│       ├── myprintingdeals.md
+│       ├── useful_ai_hacks.md
+│       └── ...
+│
 tests/
-requirements.txt
-.env.example
+│
+├── test_email_classifier.py
+├── test_email_workflow_graph.py
+├── test_llm_classifier_safety.py
+└── test_reply_generation.py
+│
+vectorstore/
+│
 README.md
+requirements.txt
+docker-compose.yml
+Dockerfile
+.env.example
 ```
+
 ---
-⚙️ Setup
-1. Clone the repository
+
+# ⚙️ Setup
+
+## 1. Clone Repository
+
 ```bash
 git clone https://github.com/JasonAlanJames/jppmsolutions-ai-business-ops-agent.git
+
 cd jppmsolutions-ai-business-ops-agent
 ```
-2. Create virtual environment
+
+---
+
+## 2. Create Virtual Environment
+
+### Windows
+
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
 ```
-3. Install dependencies
+
+### Linux / macOS
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+---
+
+## 3. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
-4. Configure environment variables
-Create a `.env` file:
+
+---
+
+## 4. Configure Environment Variables
+
+Create:
+
+```text
+.env
+```
+
+Example:
+
 ```env
-OPENAI_API_KEY=your_key_here
-LANGCHAIN_API_KEY=your_key_here
+OPENAI_API_KEY=your_openai_api_key
+
+OPENAI_MODEL=gpt-4o-mini
+
+LANGCHAIN_API_KEY=your_langsmith_key
 LANGCHAIN_TRACING_V2=true
+
+GMAIL_CLIENT_ID=your_gmail_client_id
+GMAIL_CLIENT_SECRET=your_gmail_client_secret
+GMAIL_REFRESH_TOKEN=your_gmail_refresh_token
 ```
-5. Run the application
+
+---
+
+## 5. Build the Vector Knowledge Base
+
 ```bash
-python app/main.py
+python -m app.rag.ingest
 ```
-or
+
+Expected:
+
+```text
+Ingested X knowledge base chunks into Chroma.
+```
+
+---
+
+## 6. Run FastAPI Server
+
 ```bash
 uvicorn app.main:app --reload
 ```
+
+Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
 ---
-🧪 Testing
+
+# 📬 FastAPI Endpoints
+
+## GET `/emails/triage`
+
+Runs Gmail inbox triage workflow.
+
+---
+
+## POST `/emails/approve`
+
+Approves or rejects workflow actions.
+
+---
+
+## GET `/emails/approvals`
+
+Returns approval audit log.
+
+---
+
+# 🧪 Testing
+
+Run the full test suite:
+
 ```bash
 pytest
 ```
+
+Current test coverage includes:
+
+- LangGraph workflow tests
+- LLM fallback safety tests
+- Approval workflow tests
+- RAG reply generation tests
+- Email classification tests
+
 ---
-📌 Example Use Cases
-Customer Inquiry Routing
-> “Can you help me build a website and AI chatbot?”
-→ Routed to App & Web Developers
+
+# 🔐 Safety Architecture
+
+The platform is intentionally designed with strict AI safety constraints.
+
+## Safety Guarantees
+
+- No automatic email sending
+- Human approval required
+- Brand-constrained routing
+- RAG-grounded response generation
+- Audit logging
+- Sensitive-topic escalation
+- Safe deterministic fallbacks
+
 ---
-Marketing Request
-> “I need help promoting my business locally”
-→ Routed to USA Marketing NOW
+
+# 📈 Future Enhancements
+
+Planned roadmap items include:
+
+- Slack / Discord notifications
+- CRM integration
+- Multi-user approval dashboard
+- PostgreSQL persistence layer
+- Agent memory systems
+- Scheduled workflows
+- Analytics dashboard
+- Docker production deployment
+- Kubernetes deployment architecture
+- Role-based access controls
+- Advanced observability
+
 ---
-Printing Request
-> “I need 5,000 flyers and EDDM mailing”
-→ Routed to MyPrintingDeals
----
-Email Handling
-Incoming email:
-> “We’d like to partner with your AI YouTube channel”
-→ Classified as:
-`important`
-Routed to Useful AI Hacks
-Draft reply generated
-Awaiting approval
----
-🔐 Safety & Guardrails
-No automatic email sending
-No hallucinated services or pricing
-No exposure of sensitive data
-Approval required for all outbound communication
-Brand-specific response constraints
----
-📈 Future Enhancements
-LangGraph workflow engine
-Email inbox integration (IMAP/Gmail API)
-CRM integration
-Vector database (Chroma / Pinecone)
-Admin dashboard for approvals
-Analytics and reporting
----
-👤 Author
-Jason James  
+
+# 👤 Author
+
+## Jason James
+
 Founder, AI Agent Innovation Academy
-https://jppmsolutions.com
-https://aiagentinnovation.com
-https://youtube.com/@usefulaihacks
+
+Websites:
+
+- https://jppmsolutions.com
+- https://aiagentinnovation.com
+- https://usefulaihacks.com
+
+GitHub:
+
+- https://github.com/JasonAlanJames
+
+LinkedIn:
+
+- https://linkedin.com/in/jasonalanjames
+
 ---
-🧾 License
-This project is for demonstration and portfolio purposes.
+
+# 🧾 License
+
+This repository is intended for:
+
+- Portfolio demonstration
+- Educational purposes
+- AI workflow experimentation
+- Enterprise AI architecture demonstrations
+
 ---
-💡 Final Note
-This system represents a scalable foundation for AI-powered business operations, combining automation, intelligence, and human oversight into a unified workflow.
-One ecosystem. Multiple solutions. Limitless possibilities.
+
+# 💡 Final Note
+
+This project demonstrates how modern AI systems can safely augment real-world business operations using:
+
+- AI orchestration
+- Stateful workflows
+- Human oversight
+- Retrieval-Augmented Generation
+- Enterprise-safe automation patterns
+
+It represents a scalable foundation for production-grade AI business communications systems.
