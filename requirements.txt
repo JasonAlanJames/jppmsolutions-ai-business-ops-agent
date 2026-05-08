@@ -33,6 +33,12 @@ google-auth-oauthlib>=1.2.0
 google-auth-httplib2>=0.2.0
 
 # =========================
+# AUTH / DASHBOARD SECURITY
+# =========================
+itsdangerous>=2.2.0
+python-multipart>=0.0.9
+
+# =========================
 # HTML PARSING (EMAIL BODY)
 # =========================
 beautifulsoup4>=4.12.3
