@@ -1,9 +1,11 @@
 from typing import Any, TypedDict
 
+from langgraph import graph
 from langgraph.graph import END, START, StateGraph
 
 from app.email_ops.llm_classifier import classify_email_with_llm
 
+from app.email_ops.reply_generator import generate_rag_reply
 
 class EmailWorkflowState(TypedDict, total=False):
     message_id: str
@@ -23,6 +25,29 @@ class EmailWorkflowState(TypedDict, total=False):
 
     action: str
     audit_log: list[str]
+
+
+def generate_reply_draft(state: EmailWorkflowState) -> dict[str, Any]:
+    if not state.get("needs_reply"):
+        return {}
+
+    draft_reply = generate_rag_reply(
+        subject=state.get("subject", ""),
+        sender=state.get("sender", ""),
+        body=state.get("body", ""),
+        brand_route=state.get("brand_route", "JPPM Solutions"),
+    )
+
+    audit_log = state.get("audit_log", [])
+    audit_log.append("Generated RAG-grounded draft reply for human approval.")
+
+    suggested_subject = state.get("suggested_subject") or f"Re: {state.get('subject', '(No Subject)')}"
+
+    return {
+        "draft_reply": draft_reply,
+        "suggested_subject": suggested_subject,
+        "audit_log": audit_log,
+    }
 
 
 def initialize_state(state: EmailWorkflowState) -> dict[str, Any]:
@@ -92,6 +117,9 @@ def prepare_human_review(state: EmailWorkflowState) -> dict[str, Any]:
 
 
 def route_after_decision(state: EmailWorkflowState) -> str:
+    if state.get("action") == "draft_reply_for_human_approval":
+        return "generate_reply_draft"
+
     return "human_review"
 
 
@@ -102,6 +130,7 @@ def build_email_triage_graph():
     graph.add_node("classify_and_route", classify_and_route)
     graph.add_node("decide_next_action", decide_next_action)
     graph.add_node("human_review", prepare_human_review)
+    graph.add_node("generate_reply_draft", generate_reply_draft)
 
     graph.add_edge(START, "initialize_state")
     graph.add_edge("initialize_state", "classify_and_route")
@@ -110,10 +139,11 @@ def build_email_triage_graph():
         "decide_next_action",
         route_after_decision,
         {
+            "generate_reply_draft": "generate_reply_draft",
             "human_review": "human_review",
         },
     )
-    graph.add_edge("human_review", END)
+    graph.add_edge("generate_reply_draft", "human_review")
 
     return graph.compile()
 
