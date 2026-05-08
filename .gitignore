@@ -9,3 +9,4 @@ credentials.json
 *.key
 logs/
 vectorstore/
+data/knowledge_base/internal/
