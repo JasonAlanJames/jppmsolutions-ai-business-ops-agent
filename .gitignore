@@ -10,3 +10,7 @@ credentials.json
 logs/
 vectorstore/
 data/knowledge_base/internal/
+data/runtime/
+*.db
+*.sqlite
+*.sqlite3

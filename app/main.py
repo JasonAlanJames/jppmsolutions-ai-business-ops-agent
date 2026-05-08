@@ -1,18 +1,34 @@
+from contextlib import asynccontextmanager
+
 from fastapi import Depends, FastAPI
+from sqlalchemy.orm import Session
 
 from app.auth import verify_google_admin_token
+from app.db import get_db, init_db
+from app.email_ops.approval_repository import (
+    approval_to_dict,
+    list_approval_decisions,
+)
 from app.email_ops.approval_schemas import ApprovalRequest, ApprovalResult
-from app.email_ops.approval_service import get_approval_log, process_approval
+from app.email_ops.approval_service import process_approval
 from app.email_ops.gmail_triage import triage_unread_emails
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
 
 
 app = FastAPI(
     title="JPPM Solutions AI Business Operations Agent",
     description=(
-        "LangChain, LangGraph, Gmail API, Chroma RAG, and approval-gated "
-        "AI business communications assistant for the JPPM Solutions ecosystem."
+        "LangChain, LangGraph, Gmail API, Chroma RAG, SQLite persistence, "
+        "and approval-gated AI business communications assistant for the "
+        "JPPM Solutions ecosystem."
     ),
-    version="0.2.0",
+    version="0.3.0",
+    lifespan=lifespan,
 )
 
 
@@ -21,9 +37,10 @@ def root():
     return {
         "status": "running",
         "service": "JPPM Solutions AI Business Operations Agent",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "safety": "No email is sent automatically. Human approval is required.",
         "auth": "Protected endpoints require Google ID token authentication.",
+        "persistence": "SQLite persistence enabled for approval decisions.",
     }
 
 
@@ -36,7 +53,7 @@ def triage_emails(
     """
     Triage unread Gmail messages through the LangGraph workflow.
 
-    Safe default:
+    Safe defaults:
     - create_drafts=False
     - no send action exists
     - protected by Google-authenticated admin access
@@ -54,24 +71,31 @@ def triage_emails(
 def approve_email(
     request: ApprovalRequest,
     admin: dict = Depends(verify_google_admin_token),
+    db: Session = Depends(get_db),
 ):
     """
-    Record human approval or rejection.
+    Approve or reject an email workflow action.
 
-    Approval can create a Gmail draft when the workflow determines a reply is needed.
+    Approval may create a Gmail draft when the workflow determines a reply is needed.
     This endpoint never sends emails automatically.
     """
-    return process_approval(request)
+    return process_approval(
+        request=request,
+        db=db,
+    )
 
 
 @app.get("/emails/approvals")
 def approvals(
     admin: dict = Depends(verify_google_admin_token),
+    db: Session = Depends(get_db),
 ):
     """
-    Return approval log for authenticated admins.
+    Return persisted approval decisions for authenticated admins.
     """
+    records = list_approval_decisions(db)
+
     return {
         "admin_email": admin.get("email"),
-        "approval_log": get_approval_log(),
+        "approval_log": [approval_to_dict(record) for record in records],
     }
