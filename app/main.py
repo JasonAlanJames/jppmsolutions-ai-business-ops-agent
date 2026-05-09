@@ -1,6 +1,9 @@
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
 from sqlalchemy.orm import Session
 
 from app.auth import verify_google_admin_token
@@ -33,6 +36,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+templates = Jinja2Templates(directory="app/templates")
 
 @app.get("/")
 def root():
@@ -118,3 +122,21 @@ def workflows(
         "admin_email": admin.get("email"),
         "workflow_records": [workflow_to_dict(record) for record in records],
     }
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    workflow_records = list_email_workflow_records(db, limit=25)
+    approval_records = list_approval_decisions(db, limit=25)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html",
+        context={
+            "workflow_records": workflow_records,
+            "approval_records": approval_records,
+        },
+)
