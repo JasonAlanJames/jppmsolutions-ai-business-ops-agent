@@ -127,6 +127,7 @@ def workflows(
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(
     request: Request,
+    admin: dict = Depends(verify_google_admin_token),
     db: Session = Depends(get_db),
 ):
     workflow_records = list_email_workflow_records(db, limit=25)
@@ -138,5 +139,6 @@ def dashboard(
         context={
             "workflow_records": workflow_records,
             "approval_records": approval_records,
+            "admin_email": admin.get("email"),
         },
 )

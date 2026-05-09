@@ -6,10 +6,8 @@ from app.main import app
 client = TestClient(app)
 
 
-def test_dashboard_loads():
+def test_dashboard_requires_auth():
     response = client.get("/dashboard")
 
-    assert response.status_code == 200
-    assert "JPPM AI Business Ops Dashboard" in response.text
-    assert "Workflow Records" in response.text
-    assert "Approval Decisions" in response.text
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Missing or invalid Authorization header."
