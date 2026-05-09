@@ -10,4 +10,4 @@ def test_dashboard_requires_auth():
     response = client.get("/dashboard")
 
     assert response.status_code == 401
-    assert response.json()["detail"] == "Missing or invalid Authorization header."
+    assert response.json()["detail"] == "Dashboard login required."

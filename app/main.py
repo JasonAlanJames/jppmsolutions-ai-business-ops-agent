@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
@@ -18,6 +18,11 @@ from app.email_ops.approval_schemas import ApprovalRequest, ApprovalResult
 from app.email_ops.approval_service import process_approval
 from app.email_ops.gmail_triage import triage_unread_emails
 
+import os
+
+from authlib.integrations.starlette_client import OAuth
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.responses import RedirectResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -37,6 +42,23 @@ app = FastAPI(
 )
 
 templates = Jinja2Templates(directory="app/templates")
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_SECRET_KEY", "dev-only-change-me"),
+)
+
+oauth = OAuth()
+
+oauth.register(
+    name="google",
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={
+        "scope": "openid email profile",
+    },
+)
 
 @app.get("/")
 def root():
@@ -124,10 +146,22 @@ def workflows(
     }
 
 
+def require_dashboard_user(request: Request) -> dict:
+    user = request.session.get("user")
+
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Dashboard login required.",
+        )
+
+    return user
+
+
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(
     request: Request,
-    admin: dict = Depends(verify_google_admin_token),
+    admin: dict = Depends(require_dashboard_user),
     db: Session = Depends(get_db),
 ):
     workflow_records = list_email_workflow_records(db, limit=25)
@@ -142,3 +176,55 @@ def dashboard(
             "admin_email": admin.get("email"),
         },
 )
+
+
+@app.get("/login")
+async def login(request: Request):
+    redirect_uri = os.getenv(
+        "GOOGLE_REDIRECT_URI",
+        "http://127.0.0.1:8000/auth/callback",
+    )
+
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+
+@app.get("/auth/callback")
+async def auth_callback(request: Request):
+    token = await oauth.google.authorize_access_token(request)
+    user = token.get("userinfo")
+
+    if not user:
+        user = await oauth.google.parse_id_token(request, token)
+
+    email = user.get("email", "").lower()
+
+    allowed_emails = {
+        item.strip().lower()
+        for item in os.getenv("ALLOWED_ADMIN_EMAILS", "").split(",")
+        if item.strip()
+    }
+
+    if email not in allowed_emails:
+        return RedirectResponse(url="/unauthorized")
+
+    request.session["user"] = {
+        "email": email,
+        "name": user.get("name", ""),
+        "picture": user.get("picture", ""),
+    }
+
+    return RedirectResponse(url="/dashboard")
+
+
+@app.get("/logout")
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/")
+
+
+@app.get("/unauthorized")
+def unauthorized():
+    return {
+        "status": "unauthorized",
+        "message": "This Google account is not authorized to access the dashboard.",
+    }
