@@ -151,6 +151,13 @@ def workflows(
     }
 
 
+def redirect_to_dashboard(message: str):
+    return RedirectResponse(
+        url=f"/dashboard?message={message}",
+        status_code=303,
+    )
+
+
 def require_dashboard_user(request: Request) -> dict:
     user = request.session.get("user")
 
@@ -168,6 +175,7 @@ def dashboard(
     request: Request,
     admin: dict = Depends(require_dashboard_user),
     db: Session = Depends(get_db),
+    message: str | None = None,
 ):
     workflow_records = list_email_workflow_records(db, limit=25)
     approval_records = list_approval_decisions(db, limit=25)
@@ -179,8 +187,9 @@ def dashboard(
             "workflow_records": workflow_records,
             "approval_records": approval_records,
             "admin_email": admin.get("email"),
+            "message": message,
         },
-)
+    )
 
 
 @app.post("/dashboard/triage")
