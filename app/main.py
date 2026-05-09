@@ -8,6 +8,8 @@ from app.db import get_db, init_db
 from app.email_ops.approval_repository import (
     approval_to_dict,
     list_approval_decisions,
+    list_email_workflow_records,
+    workflow_to_dict,
 )
 from app.email_ops.approval_schemas import ApprovalRequest, ApprovalResult
 from app.email_ops.approval_service import process_approval
@@ -98,4 +100,21 @@ def approvals(
     return {
         "admin_email": admin.get("email"),
         "approval_log": [approval_to_dict(record) for record in records],
+    }
+
+
+@app.get("/emails/workflows")
+def workflows(
+    admin: dict = Depends(verify_google_admin_token),
+    db: Session = Depends(get_db),
+    limit: int = 100,
+):
+    """
+    Return persisted email workflow records for authenticated admins.
+    """
+    records = list_email_workflow_records(db, limit=limit)
+
+    return {
+        "admin_email": admin.get("email"),
+        "workflow_records": [workflow_to_dict(record) for record in records],
     }
