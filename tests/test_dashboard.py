@@ -32,3 +32,16 @@ def test_dashboard_reject_action_requires_auth():
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Dashboard login required."
+
+
+def test_dashboard_search_requires_auth():
+    response = client.get("/dashboard?q=AI")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Dashboard login required."
+
+def test_dashboard_search_requires_auth():
+    response = client.get("/dashboard?q=AI+is+awesome")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Dashboard login required."

@@ -97,6 +97,30 @@ def list_email_workflow_records(
     )
 
 
+def search_email_workflow_records(
+    db: Session,
+    query: str,
+    limit: int = 100,
+) -> list[EmailWorkflowRecord]:
+    search_term = f"%{query.strip()}%"
+
+    return (
+        db.query(EmailWorkflowRecord)
+        .filter(
+            EmailWorkflowRecord.subject.ilike(search_term)
+            | EmailWorkflowRecord.sender.ilike(search_term)
+            | EmailWorkflowRecord.category.ilike(search_term)
+            | EmailWorkflowRecord.brand_route.ilike(search_term)
+            | EmailWorkflowRecord.priority.ilike(search_term)
+            | EmailWorkflowRecord.action.ilike(search_term)
+            | EmailWorkflowRecord.reason.ilike(search_term)
+        )
+        .order_by(EmailWorkflowRecord.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+
 def approval_to_dict(record: ApprovalDecision) -> dict[str, Any]:
     return {
         "id": record.id,

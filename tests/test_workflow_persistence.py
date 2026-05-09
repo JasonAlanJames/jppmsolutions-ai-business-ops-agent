@@ -1,6 +1,7 @@
 from app.email_ops.approval_repository import (
     list_email_workflow_records,
     save_email_workflow_record,
+    search_email_workflow_records,
     workflow_to_dict,
 )
 
@@ -85,3 +86,30 @@ def test_workflow_to_dict(db_session):
     assert data["draft_created"] is False
     assert isinstance(data["audit_log"], list)
     assert "Routed to MyPrintingDeals." in data["audit_log"]
+
+def test_search_email_workflow_records(db_session):
+    save_email_workflow_record(
+        db_session,
+        message_id="test-message-search-1",
+        thread_id="test-thread-search-1",
+        sender="lead@example.com",
+        subject="Need help with AI automation",
+        category="needs_reply",
+        brand_route="App & Web Developers",
+        priority="high",
+        needs_reply=True,
+        human_approval_required=True,
+        action="draft_reply_for_human_approval",
+        reason="Lead asked about AI automation services.",
+        draft_created=False,
+        draft_id="",
+        audit_log=["Workflow started.", "Matched AI automation search."],
+    )
+
+    results = search_email_workflow_records(
+        db_session,
+        query="AI automation",
+    )
+
+    assert len(results) >= 1
+    assert results[0].message_id == "test-message-search-1"

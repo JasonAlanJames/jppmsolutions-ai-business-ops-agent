@@ -12,6 +12,7 @@ from app.email_ops.approval_repository import (
     approval_to_dict,
     list_approval_decisions,
     list_email_workflow_records,
+    search_email_workflow_records,
     workflow_to_dict,
 )
 from app.email_ops.approval_schemas import ApprovalRequest, ApprovalResult
@@ -176,9 +177,24 @@ def dashboard(
     admin: dict = Depends(require_dashboard_user),
     db: Session = Depends(get_db),
     message: str | None = None,
+    q: str | None = None,
 ):
-    workflow_records = list_email_workflow_records(db, limit=25)
-    approval_records = list_approval_decisions(db, limit=25)
+    if q and q.strip():
+        workflow_records = search_email_workflow_records(
+            db,
+            query=q,
+            limit=50,
+        )
+    else:
+        workflow_records = list_email_workflow_records(
+            db,
+            limit=25,
+        )
+
+    approval_records = list_approval_decisions(
+        db,
+        limit=25,
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -188,6 +204,7 @@ def dashboard(
             "approval_records": approval_records,
             "admin_email": admin.get("email"),
             "message": message,
+            "q": q or "",
         },
     )
 
