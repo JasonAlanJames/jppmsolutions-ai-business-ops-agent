@@ -183,6 +183,24 @@ def dashboard(
 )
 
 
+@app.post("/dashboard/triage")
+def dashboard_run_triage(
+    request: Request,
+    admin: dict = Depends(require_dashboard_user),
+    db: Session = Depends(get_db),
+):
+    triage_unread_emails(
+        max_results=5,
+        create_drafts=False,
+        db=db,
+    )
+
+    return RedirectResponse(
+        url="/dashboard",
+        status_code=303,
+    )
+
+
 @app.get("/login")
 async def login(request: Request):
     redirect_uri = os.getenv(
