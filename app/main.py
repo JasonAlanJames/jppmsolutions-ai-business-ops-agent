@@ -53,7 +53,7 @@ oauth = OAuth()
 oauth.register(
     name="google",
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
-    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET") or os.getenv("GMAIL_CLIENT_SECRET"),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={
         "scope": "openid email profile",
@@ -62,6 +62,11 @@ oauth.register(
 
 @app.get("/")
 def root():
+    return RedirectResponse(url="/dashboard")
+
+
+@app.get("/health")
+def health():
     return {
         "status": "running",
         "service": "JPPM Solutions AI Business Operations Agent",
