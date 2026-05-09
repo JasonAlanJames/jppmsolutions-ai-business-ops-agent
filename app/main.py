@@ -201,6 +201,56 @@ def dashboard_run_triage(
     )
 
 
+@app.post("/dashboard/approve/{message_id}")
+def dashboard_approve_email(
+    message_id: str,
+    request: Request,
+    admin: dict = Depends(require_dashboard_user),
+    db: Session = Depends(get_db),
+):
+    approval_request = ApprovalRequest(
+        message_id=message_id,
+        approved=True,
+        reviewer=admin.get("email", "dashboard-admin"),
+        notes="Approved from dashboard.",
+    )
+
+    process_approval(
+        request=approval_request,
+        db=db,
+    )
+
+    return RedirectResponse(
+        url="/dashboard",
+        status_code=303,
+    )
+
+
+@app.post("/dashboard/reject/{message_id}")
+def dashboard_reject_email(
+    message_id: str,
+    request: Request,
+    admin: dict = Depends(require_dashboard_user),
+    db: Session = Depends(get_db),
+):
+    approval_request = ApprovalRequest(
+        message_id=message_id,
+        approved=False,
+        reviewer=admin.get("email", "dashboard-admin"),
+        notes="Rejected from dashboard.",
+    )
+
+    process_approval(
+        request=approval_request,
+        db=db,
+    )
+
+    return RedirectResponse(
+        url="/dashboard",
+        status_code=303,
+    )
+
+
 @app.get("/login")
 async def login(request: Request):
     redirect_uri = os.getenv(

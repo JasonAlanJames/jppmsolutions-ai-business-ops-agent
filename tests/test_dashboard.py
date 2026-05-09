@@ -18,3 +18,17 @@ def test_dashboard_triage_action_requires_auth():
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Dashboard login required."
+
+
+def test_dashboard_approve_action_requires_auth():
+    response = client.post("/dashboard/approve/test-message-id")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Dashboard login required."
+
+
+def test_dashboard_reject_action_requires_auth():
+    response = client.post("/dashboard/reject/test-message-id")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Dashboard login required."

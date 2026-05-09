@@ -178,6 +178,7 @@
                     <th>Action</th>
                     <th>Draft</th>
                     <th>Created</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -194,6 +195,36 @@
                     <td>{{ item.action }}</td>
                     <td>{{ "Yes" if item.draft_created else "No" }}</td>
                     <td>{{ item.created_at }}</td>
+                    <td>
+    <form method="post" action="/dashboard/approve/{{ item.message_id }}" style="display:inline;">
+        <button type="submit" style="
+            background:#16a34a;
+            color:white;
+            border:none;
+            border-radius:6px;
+            padding:7px 10px;
+            font-weight:700;
+            cursor:pointer;
+            margin-right:6px;
+        ">
+            Approve
+        </button>
+    </form>
+
+    <form method="post" action="/dashboard/reject/{{ item.message_id }}" style="display:inline;">
+        <button type="submit" style="
+            background:#dc2626;
+            color:white;
+            border:none;
+            border-radius:6px;
+            padding:7px 10px;
+            font-weight:700;
+            cursor:pointer;
+        ">
+            Reject
+        </button>
+    </form>
+</td>
                 </tr>
                 {% endfor %}
             </tbody>
