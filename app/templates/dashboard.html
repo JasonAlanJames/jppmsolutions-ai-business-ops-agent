@@ -32,6 +32,38 @@
             padding: 32px;
         }
 
+        .links {
+            margin-top: 16px;
+        }
+
+        .links a {
+            color: #2563eb;
+            margin-right: 16px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .flash {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            color: #065f46;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
         .cards {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -55,18 +87,6 @@
             font-size: 32px;
             font-weight: bold;
             color: #111827;
-        }
-
-        section {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 32px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        }
-
-        h2 {
-            margin-top: 0;
         }
 
         table {
@@ -100,20 +120,62 @@
         .archive { background: #e5e7eb; color: #374151; }
         .spam, .trash { background: #fee2e2; color: #b91c1c; }
 
-        .links {
-            margin-top: 16px;
-        }
-
-        .links a {
-            color: #2563eb;
-            margin-right: 16px;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
         .empty {
             color: #6b7280;
             font-style: italic;
+        }
+
+        .btn {
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 2px 6px 2px 0;
+        }
+
+        .btn-blue { background: #2563eb; border-radius: 8px; padding: 12px 18px; }
+        .btn-green { background: #16a34a; }
+        .btn-red { background: #dc2626; }
+        .btn-gray { background: #4b5563; }
+        .btn-light-gray { background: #9ca3af; }
+        .btn-yellow { background: #f59e0b; }
+        .btn-dark-red { background: #7f1d1d; }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 260px;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+        }
+
+        .clear-link {
+            color: #2563eb;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .admin-meta {
+            color: #d1d5db;
+            margin-top: 8px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -121,32 +183,82 @@
 <header>
     <h1>JPPM AI Business Ops Dashboard</h1>
     <p>LangGraph · Gmail API · Chroma RAG · Human Approval · SQLite Persistence</p>
+
+    {% if admin_email %}
+    <div class="admin-meta">Signed in as {{ admin_email }}</div>
+    {% endif %}
+
     <div class="links">
         <a href="/docs">Swagger API Docs</a>
         <a href="/redoc">ReDoc</a>
+        <a href="/logout">Logout</a>
     </div>
 </header>
 
 <main>
+    {% if message %}
+    <section class="flash">
+        {{ message }}
+    </section>
+    {% endif %}
+
     <section>
-    <h2>Admin Actions</h2>
-    <form method="post" action="/dashboard/triage">
-        <button type="submit" style="
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 18px;
-            font-weight: 700;
-            cursor: pointer;
-        ">
-            Run Gmail Triage
-        </button>
-    </form>
-    <p style="color:#6b7280; margin-top:10px;">
-        This processes unread Gmail messages, stores workflow records, and does not send emails.
-    </p>
-</section>
+        <h2>Search Stored Workflow Records</h2>
+
+        <form method="get" action="/dashboard" class="search-form">
+            <input
+                type="text"
+                name="q"
+                value="{{ q }}"
+                placeholder="Search by subject, sender, brand, category, action, or reason..."
+                class="search-input"
+            >
+
+            <label class="search-label">
+                <input
+                    type="checkbox"
+                    name="live_gmail"
+                    value="true"
+                    {% if live_gmail %}checked{% endif %}
+                >
+                Search live Gmail
+            </label>
+
+            <button type="submit" class="btn btn-gray">
+                Search
+            </button>
+
+            <a href="/dashboard" class="clear-link">
+                Clear
+            </a>
+        </form>
+
+        {% if q %}
+        <p style="color:#6b7280; margin-top:10px;">
+            Showing results for: <strong>{{ q }}</strong>
+            {% if live_gmail %}
+                including live Gmail search.
+            {% else %}
+                from stored workflow records.
+            {% endif %}
+        </p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Admin Actions</h2>
+
+        <form method="post" action="/dashboard/triage">
+            <button type="submit" class="btn btn-blue">
+                Run Gmail Triage
+            </button>
+        </form>
+
+        <p style="color:#6b7280; margin-top:10px;">
+            This processes unread Gmail messages, stores workflow records, and does not send emails.
+        </p>
+    </section>
+
     <div class="cards">
         <div class="card">
             <h2>Workflow Records</h2>
@@ -163,6 +275,39 @@
             <div class="value">ON</div>
         </div>
     </div>
+
+    {% if live_gmail and q %}
+    <section>
+        <h2>Live Gmail Search Results</h2>
+
+        {% if gmail_results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>From</th>
+                    <th>Date</th>
+                    <th>Snippet</th>
+                    <th>Message ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in gmail_results %}
+                <tr>
+                    <td>{{ item.subject }}</td>
+                    <td>{{ item.from }}</td>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.snippet }}</td>
+                    <td>{{ item.message_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty">No live Gmail results found for this search.</p>
+        {% endif %}
+    </section>
+    {% endif %}
 
     <section>
         <h2>Recent Email Workflow Records</h2>
@@ -196,35 +341,52 @@
                     <td>{{ "Yes" if item.draft_created else "No" }}</td>
                     <td>{{ item.created_at }}</td>
                     <td>
-    <form method="post" action="/dashboard/approve/{{ item.message_id }}" style="display:inline;">
-        <button type="submit" style="
-            background:#16a34a;
-            color:white;
-            border:none;
-            border-radius:6px;
-            padding:7px 10px;
-            font-weight:700;
-            cursor:pointer;
-            margin-right:6px;
-        ">
-            Approve
-        </button>
-    </form>
+                        {% if item.needs_reply %}
+                            <form method="post" action="/dashboard/approve/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-green">Approve Draft</button>
+                            </form>
 
-    <form method="post" action="/dashboard/reject/{{ item.message_id }}" style="display:inline;">
-        <button type="submit" style="
-            background:#dc2626;
-            color:white;
-            border:none;
-            border-radius:6px;
-            padding:7px 10px;
-            font-weight:700;
-            cursor:pointer;
-        ">
-            Reject
-        </button>
-    </form>
-</td>
+                            <form method="post" action="/dashboard/reject/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-red">Reject</button>
+                            </form>
+
+                        {% elif item.category == "archive" %}
+                            <form method="post" action="/dashboard/approve/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-gray">Mark Reviewed</button>
+                            </form>
+
+                            <form method="post" action="/dashboard/reject/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-light-gray">Ignore</button>
+                            </form>
+
+                        {% elif item.category == "human_review" %}
+                            <form method="post" action="/dashboard/approve/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-yellow">Mark Reviewed</button>
+                            </form>
+
+                            <form method="post" action="/dashboard/reject/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-red">Needs Follow-up</button>
+                            </form>
+
+                        {% elif item.category == "spam" or item.category == "trash" %}
+                            <form method="post" action="/dashboard/approve/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-dark-red">Confirm</button>
+                            </form>
+
+                            <form method="post" action="/dashboard/reject/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-light-gray">Ignore</button>
+                            </form>
+
+                        {% else %}
+                            <form method="post" action="/dashboard/approve/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-green">Approve</button>
+                            </form>
+
+                            <form method="post" action="/dashboard/reject/{{ item.message_id }}" style="display:inline;">
+                                <button type="submit" class="btn btn-red">Reject</button>
+                            </form>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
