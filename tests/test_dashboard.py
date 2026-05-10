@@ -51,3 +51,9 @@ def test_dashboard_live_gmail_search_requires_auth():
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Dashboard login required."
+
+def test_dashboard_workflow_detail_requires_auth():
+    response = client.get("/dashboard/workflow/test-message-id")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Dashboard login required."

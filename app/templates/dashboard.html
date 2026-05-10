@@ -294,7 +294,11 @@
             <tbody>
                 {% for item in gmail_results %}
                 <tr>
-                    <td>{{ item.subject }}</td>
+                    <td>
+    <a href="/dashboard/workflow/{{ item.message_id }}" style="color:#2563eb; font-weight:700; text-decoration:none;">
+        {{ item.subject }}
+    </a>
+</td>
                     <td>{{ item.from }}</td>
                     <td>{{ item.date }}</td>
                     <td>{{ item.snippet }}</td>
@@ -329,7 +333,11 @@
             <tbody>
                 {% for item in workflow_records %}
                 <tr>
-                    <td>{{ item.subject }}</td>
+                    <td>
+    <a href="/dashboard/workflow/{{ item.message_id }}" style="color:#2563eb; font-weight:700; text-decoration:none;">
+        {{ item.subject }}
+    </a>
+</td>
                     <td>{{ item.sender }}</td>
                     <td>
                         <span class="badge {{ item.category }}">

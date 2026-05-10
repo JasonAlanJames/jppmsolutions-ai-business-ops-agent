@@ -11,6 +11,7 @@ from app.db import get_db, init_db
 from app.email_ops.approval_repository import (
     approval_to_dict,
     list_approval_decisions,
+    list_approval_decisions_for_message,
     list_email_workflow_records,
     search_email_workflow_records,
     get_email_workflow_record_by_message_id,
@@ -316,6 +317,38 @@ def dashboard_reject_email(
 
     return redirect_to_dashboard(
         "Dashboard action rejected. No Gmail draft was created and no email was sent."
+    )
+
+
+@app.get("/dashboard/workflow/{message_id}", response_class=HTMLResponse)
+def dashboard_workflow_detail(
+    message_id: str,
+    request: Request,
+    admin: dict = Depends(require_dashboard_user),
+    db: Session = Depends(get_db),
+):
+    workflow_record = get_email_workflow_record_by_message_id(
+        db,
+        message_id=message_id,
+    )
+
+    if workflow_record is None:
+        return redirect_to_dashboard("Workflow record not found.")
+
+    approval_records = list_approval_decisions_for_message(
+        db,
+        message_id=message_id,
+        limit=50,
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="workflow_detail.html",
+        context={
+            "workflow_record": workflow_record,
+            "approval_records": approval_records,
+            "admin_email": admin.get("email"),
+        },
     )
 
 

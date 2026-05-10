@@ -170,3 +170,16 @@ def get_email_workflow_record_by_message_id(
         .order_by(EmailWorkflowRecord.created_at.desc())
         .first()
     )
+
+def list_approval_decisions_for_message(
+    db: Session,
+    message_id: str,
+    limit: int = 50,
+) -> list[ApprovalDecision]:
+    return (
+        db.query(ApprovalDecision)
+        .filter(ApprovalDecision.message_id == message_id)
+        .order_by(ApprovalDecision.created_at.desc())
+        .limit(limit)
+        .all()
+    )

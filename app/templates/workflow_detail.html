@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workflow Detail · JPPM AI Business Ops</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 24px 32px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        header p {
+            margin: 8px 0 0;
+            color: #d1d5db;
+        }
+
+        main {
+            padding: 32px;
+        }
+
+        section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .links {
+            margin-top: 16px;
+        }
+
+        .links a {
+            color: #2563eb;
+            margin-right: 16px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 12px 18px;
+            font-size: 14px;
+        }
+
+        .label {
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .value {
+            color: #111827;
+            word-break: break-word;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .needs_reply { background: #dbeafe; color: #1d4ed8; }
+        .human_review { background: #fef3c7; color: #92400e; }
+        .archive { background: #e5e7eb; color: #374151; }
+        .spam, .trash { background: #fee2e2; color: #b91c1c; }
+
+        pre {
+            white-space: pre-wrap;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 14px;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 700;
+        }
+
+        .btn {
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 9px 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-right: 6px;
+        }
+
+        .btn-green { background: #16a34a; }
+        .btn-red { background: #dc2626; }
+        .btn-gray { background: #4b5563; }
+
+        .empty {
+            color: #6b7280;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Workflow Detail</h1>
+    <p>JPPM AI Business Ops Dashboard</p>
+
+    <div class="links">
+        <a href="/dashboard">Back to Dashboard</a>
+        <a href="/docs">Swagger API Docs</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    {% if admin_email %}
+    <p>Signed in as {{ admin_email }}</p>
+    {% endif %}
+</header>
+
+<main>
+    <section>
+        <h2>Email Workflow Record</h2>
+
+        <div class="meta-grid">
+            <div class="label">Message ID</div>
+            <div class="value">{{ workflow_record.message_id }}</div>
+
+            <div class="label">Thread ID</div>
+            <div class="value">{{ workflow_record.thread_id }}</div>
+
+            <div class="label">Subject</div>
+            <div class="value">{{ workflow_record.subject }}</div>
+
+            <div class="label">From</div>
+            <div class="value">{{ workflow_record.sender }}</div>
+
+            <div class="label">Category</div>
+            <div class="value">
+                <span class="badge {{ workflow_record.category }}">
+                    {{ workflow_record.category }}
+                </span>
+            </div>
+
+            <div class="label">Brand Route</div>
+            <div class="value">{{ workflow_record.brand_route }}</div>
+
+            <div class="label">Priority</div>
+            <div class="value">{{ workflow_record.priority }}</div>
+
+            <div class="label">Action</div>
+            <div class="value">{{ workflow_record.action }}</div>
+
+            <div class="label">Needs Reply</div>
+            <div class="value">{{ "Yes" if workflow_record.needs_reply else "No" }}</div>
+
+            <div class="label">Human Approval Required</div>
+            <div class="value">{{ "Yes" if workflow_record.human_approval_required else "No" }}</div>
+
+            <div class="label">Draft Created</div>
+            <div class="value">{{ "Yes" if workflow_record.draft_created else "No" }}</div>
+
+            <div class="label">Draft ID</div>
+            <div class="value">{{ workflow_record.draft_id }}</div>
+
+            <div class="label">Created</div>
+            <div class="value">{{ workflow_record.created_at }}</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Reason</h2>
+        <pre>{{ workflow_record.reason }}</pre>
+    </section>
+
+    <section>
+        <h2>Audit Log</h2>
+        <pre>{{ workflow_record.audit_log }}</pre>
+    </section>
+
+    <section>
+        <h2>Dashboard Actions</h2>
+
+        <form method="post" action="/dashboard/approve/{{ workflow_record.message_id }}" style="display:inline;">
+            <button type="submit" class="btn btn-green">
+                {% if workflow_record.needs_reply %}
+                    Approve Draft
+                {% else %}
+                    Mark Reviewed
+                {% endif %}
+            </button>
+        </form>
+
+        <form method="post" action="/dashboard/reject/{{ workflow_record.message_id }}" style="display:inline;">
+            <button type="submit" class="btn btn-red">
+                {% if workflow_record.needs_reply %}
+                    Reject
+                {% else %}
+                    Ignore
+                {% endif %}
+            </button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Approval History</h2>
+
+        {% if approval_records %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Approved</th>
+                    <th>Reviewer</th>
+                    <th>Action</th>
+                    <th>Notes</th>
+                    <th>Result</th>
+                    <th>Draft ID</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in approval_records %}
+                <tr>
+                    <td>{{ "Yes" if item.approved else "No" }}</td>
+                    <td>{{ item.reviewer }}</td>
+                    <td>{{ item.action_taken }}</td>
+                    <td>{{ item.notes }}</td>
+                    <td>{{ item.result_message }}</td>
+                    <td>{{ item.draft_id }}</td>
+                    <td>{{ item.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty">No approval history exists for this message yet.</p>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>
