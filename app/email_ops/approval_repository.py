@@ -159,3 +159,14 @@ def workflow_to_dict(record: EmailWorkflowRecord) -> dict[str, Any]:
         "audit_log": audit_log,
         "created_at": record.created_at.isoformat(),
     }
+
+def get_email_workflow_record_by_message_id(
+    db: Session,
+    message_id: str,
+) -> EmailWorkflowRecord | None:
+    return (
+        db.query(EmailWorkflowRecord)
+        .filter(EmailWorkflowRecord.message_id == message_id)
+        .order_by(EmailWorkflowRecord.created_at.desc())
+        .first()
+    )

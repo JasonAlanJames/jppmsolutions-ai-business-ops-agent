@@ -13,6 +13,8 @@ from app.email_ops.approval_repository import (
     list_approval_decisions,
     list_email_workflow_records,
     search_email_workflow_records,
+    get_email_workflow_record_by_message_id,
+    save_approval_decision,
     workflow_to_dict,
 )
 from app.email_ops.approval_schemas import ApprovalRequest, ApprovalResult
@@ -25,6 +27,7 @@ import os
 from authlib.integrations.starlette_client import OAuth
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import RedirectResponse
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -245,6 +248,29 @@ def dashboard_approve_email(
     admin: dict = Depends(require_dashboard_user),
     db: Session = Depends(get_db),
 ):
+    workflow_record = get_email_workflow_record_by_message_id(
+        db,
+        message_id=message_id,
+    )
+
+    if workflow_record and not workflow_record.needs_reply:
+        save_approval_decision(
+            db,
+            message_id=message_id,
+            approved=True,
+            reviewer=admin.get("email", "dashboard-admin"),
+            notes="Approved from dashboard. No reply was needed.",
+            action_taken="approved_no_action",
+            result_message=(
+                "Workflow recommendation approved. No Gmail draft was created "
+                "because this record did not require a reply."
+            ),
+        )
+
+        return redirect_to_dashboard(
+            "Workflow recommendation approved. No reply was needed."
+        )
+
     approval_request = ApprovalRequest(
         message_id=message_id,
         approved=True,
@@ -257,9 +283,8 @@ def dashboard_approve_email(
         db=db,
     )
 
-    return RedirectResponse(
-        url="/dashboard",
-        status_code=303,
+    return redirect_to_dashboard(
+        "Email approved. Gmail draft was created only if the workflow determined a reply was needed."
     )
 
 
