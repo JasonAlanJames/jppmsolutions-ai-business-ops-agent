@@ -57,3 +57,9 @@ def test_dashboard_workflow_detail_requires_auth():
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Dashboard login required."
+
+def test_dashboard_triage_single_email_requires_auth():
+    response = client.post("/dashboard/triage/test-message-id")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Dashboard login required."

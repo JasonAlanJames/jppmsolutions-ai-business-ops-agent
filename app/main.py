@@ -14,6 +14,7 @@ from app.email_ops.approval_repository import (
     list_approval_decisions_for_message,
     list_email_workflow_records,
     search_email_workflow_records,
+    save_email_workflow_record,
     get_email_workflow_record_by_message_id,
     save_approval_decision,
     workflow_to_dict,
@@ -22,6 +23,8 @@ from app.email_ops.approval_schemas import ApprovalRequest, ApprovalResult
 from app.email_ops.approval_service import process_approval
 from app.email_ops.gmail_triage import triage_unread_emails
 from app.email_ops.gmail_search import search_gmail_messages
+from app.email_ops.gmail_client import extract_email_body, extract_headers, get_email
+from app.email_ops.workflow_graph import run_email_workflow
 
 import os
 
@@ -317,6 +320,54 @@ def dashboard_reject_email(
 
     return redirect_to_dashboard(
         "Dashboard action rejected. No Gmail draft was created and no email was sent."
+    )
+
+
+@app.post("/dashboard/triage/{message_id}")
+def dashboard_triage_single_email(
+    message_id: str,
+    request: Request,
+    admin: dict = Depends(require_dashboard_user),
+    db: Session = Depends(get_db),
+):
+    message = get_email(message_id)
+    headers = extract_headers(message)
+
+    subject = headers.get("subject", "(No Subject)")
+    sender = headers.get("from", "")
+    body = extract_email_body(message)
+    thread_id = message.get("threadId", "")
+
+    workflow_result = run_email_workflow(
+        message_id=message_id,
+        thread_id=thread_id,
+        sender=sender,
+        subject=subject,
+        body=body,
+    )
+
+    save_email_workflow_record(
+        db,
+        message_id=message_id,
+        thread_id=thread_id,
+        sender=sender,
+        subject=subject,
+        category=workflow_result.get("category", ""),
+        brand_route=workflow_result.get("brand_route", ""),
+        priority=workflow_result.get("priority", ""),
+        needs_reply=bool(workflow_result.get("needs_reply", False)),
+        human_approval_required=bool(
+            workflow_result.get("human_approval_required", True)
+        ),
+        action=workflow_result.get("action", ""),
+        reason=workflow_result.get("reason", ""),
+        draft_created=False,
+        draft_id="",
+        audit_log=workflow_result.get("audit_log", []),
+    )
+
+    return redirect_to_dashboard(
+        "Live Gmail message triaged and saved to workflow records."
     )
 
 
