@@ -18,6 +18,7 @@ from app.email_ops.approval_repository import (
 from app.email_ops.approval_schemas import ApprovalRequest, ApprovalResult
 from app.email_ops.approval_service import process_approval
 from app.email_ops.gmail_triage import triage_unread_emails
+from app.email_ops.gmail_search import search_gmail_messages
 
 import os
 
@@ -170,7 +171,6 @@ def require_dashboard_user(request: Request) -> dict:
 
     return user
 
-
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(
     request: Request,
@@ -178,6 +178,7 @@ def dashboard(
     db: Session = Depends(get_db),
     message: str | None = None,
     q: str | None = None,
+    live_gmail: bool = False,
 ):
     if q and q.strip():
         workflow_records = search_email_workflow_records(
@@ -196,6 +197,14 @@ def dashboard(
         limit=25,
     )
 
+    gmail_results = []
+
+    if live_gmail and q and q.strip():
+        gmail_results = search_gmail_messages(
+            query=q,
+            max_results=10,
+        )
+
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
@@ -205,6 +214,8 @@ def dashboard(
             "admin_email": admin.get("email"),
             "message": message,
             "q": q or "",
+            "live_gmail": live_gmail,
+            "gmail_results": gmail_results,
         },
     )
 
