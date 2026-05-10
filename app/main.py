@@ -295,21 +295,27 @@ def dashboard_reject_email(
     admin: dict = Depends(require_dashboard_user),
     db: Session = Depends(get_db),
 ):
-    approval_request = ApprovalRequest(
+    workflow_record = get_email_workflow_record_by_message_id(
+        db,
+        message_id=message_id,
+    )
+
+    category = workflow_record.category if workflow_record else "unknown"
+
+    save_approval_decision(
+        db,
         message_id=message_id,
         approved=False,
         reviewer=admin.get("email", "dashboard-admin"),
-        notes="Rejected from dashboard.",
+        notes=f"Rejected from dashboard. Category: {category}.",
+        action_taken="rejected_from_dashboard",
+        result_message=(
+            "Dashboard action rejected. No Gmail draft was created and no email was sent."
+        ),
     )
 
-    process_approval(
-        request=approval_request,
-        db=db,
-    )
-
-    return RedirectResponse(
-        url="/dashboard",
-        status_code=303,
+    return redirect_to_dashboard(
+        "Dashboard action rejected. No Gmail draft was created and no email was sent."
     )
 
 
